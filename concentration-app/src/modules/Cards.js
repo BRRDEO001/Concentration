@@ -1,17 +1,17 @@
-import {useState} from 'react';
-import Card from './Card';
-import { useEffect } from 'react';
 
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
+   import { useState, useEffect, useRef } from 'react';
 
-export default function Cards(){
-    const [card, setCardState] = useState ([
+   function shuffle(array) {
+       for (let i = array.length - 1; i > 0; i--) {
+           const j = Math.floor(Math.random() * (i + 1));
+           [array[i], array[j]] = [array[j], array[i]];
+       }
+       return array;
+   }
+
+   export default function Cards() {
+       const [cards, setCards] = useState([
+
        { id: 1, name: '2_of_clubs', status: '', img: '/cardImages/2_of_clubs.png' },
        { id: 1, name: '2_of_spades', status: '', img: '/cardImages/2_of_spades.png' },
        { id: 2, name: '3_of_clubs', status: '', img: '/cardImages/3_of_clubs.png' },
@@ -66,20 +66,65 @@ export default function Cards(){
        { id: 26, name: 'ace_of_hearts', status: '', img: '/cardImages/ace_of_hearts.png' },
        { id: 27, name: 'black_joker', status: '', img: '/cardImages/black_joker.png' },
        { id: 28, name: 'red_joker', status: '', img: '/cardImages/red_joker.png' }
-    ]);
-     useEffect(() => {
-            setCardState(shuffle([...card]));
-        }, []);
+       ]);
 
-    return(
-        <div className = "container">
-            {
-                card.map((card, index) => {
-                    return <Card card = {card}/>
+       useEffect(() => {
+           setCards(shuffle([...cards]));
+       }, []);
 
-            })}
-        </div>
-    );
+       const [previousCardState, setPreviousCardState] = useState(-1);
+       const prevIndex = useRef(-1);
 
+       const clickHandler = (index) => {
+           if (index !== prevIndex.current) {
+               if (cards[index].status === 'active matched') {
+                   alert('Already matched');
+               } else {
+                   if (previousCardState === -1) {
+                       prevIndex.current = index;
+                       cards[index].status = 'active';
+                       setCards([...cards]);
+                       setPreviousCardState(index);
+                   } else {
+                       matchCheck(index);
+                       prevIndex.current = -1;
+                   }
+               }
+           } else {
+               alert('Card currently selected');
+           }
+       };
 
-}
+       const matchCheck = (currentCard) => {
+           if (cards[currentCard].id === cards[previousCardState].id) {
+               cards[previousCardState].status = 'active matched';
+               cards[currentCard].status = 'active matched';
+               setPreviousCardState(-1);
+           } else {
+               cards[currentCard].status = 'active';
+               setCards([...cards]);
+               setTimeout(() => {
+                   setPreviousCardState(-1);
+                   cards[currentCard].status = 'unmatch';
+                   cards[previousCardState].status = 'unmatch';
+                   setCards([...cards]);
+               }, 1000);
+           }
+       };
+
+       return (
+           <div className="container">
+               {cards.map((card, index) => (
+                   <Card card={card} key={index} index={index} clickHandler={clickHandler} />
+               ))}
+           </div>
+       );
+   }
+
+   export function Card({ card, index, clickHandler }) {
+       return (
+           <div className={`card ${card.status}`} onClick={() => clickHandler(index)}>
+               <img src={card.img} alt={card.name} />
+           </div>
+       );
+   }
