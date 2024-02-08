@@ -1,5 +1,14 @@
 import {useState} from 'react';
 import Card from './Card';
+import { useEffect } from 'react';
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 export default function Cards(){
     const [card, setCardState] = useState ([
@@ -57,10 +66,11 @@ export default function Cards(){
        { id: 26, name: 'ace_of_hearts', status: '', img: '/cardImages/ace_of_hearts.png' },
        { id: 27, name: 'black_joker', status: '', img: '/cardImages/black_joker.png' },
        { id: 28, name: 'red_joker', status: '', img: '/cardImages/red_joker.png' }
-
-
-
     ]);
+     useEffect(() => {
+            setCardState(shuffle([...card]));
+        }, []);
+
     return(
         <div className = "container">
             {
@@ -70,4 +80,6 @@ export default function Cards(){
             })}
         </div>
     );
+
+
 }
